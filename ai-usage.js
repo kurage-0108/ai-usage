@@ -50,7 +50,7 @@ const LAYOUTS = {
     rows: 5, pad: [12, 14, 12, 14], maxSlot: 32, separators: true,
     badge: 20, radius: 5.5, glyph: 11, gap: 8,
     name: 13, header: 9.5, headerH: 12, headerGap: 4,
-    secW: 88, mainW: 66, colGap: 10, capH: 12, capGap: 3, caption: 9.5, resetIcon: 7.5,
+    secW: 66, mainW: 66, colGap: 10, capH: 12, capGap: 3, caption: 9.5, resetIcon: 7.5,
     bar: 4, miniBar: 3,
     heroGap: 6, heroDigits: 19, heroPct: 11, heroW: 52,
     note: 10,
@@ -194,7 +194,7 @@ function buildWidget(services, family, L, meta) {
   return widget;
 }
 
-// 中: 名前 …… [5時間 % ↻リセット / ミニバー] [↻ リセット / バー] 残り%
+// 中: 名前 …… [5時間 ↻リセット % / ミニバー] [↻ リセット / バー] 残り%
 function mediumRow(row, s, L, ctx) {
   const { primary, secondary } = pickWindows(s);
   const none = !primary && !secondary;
@@ -395,33 +395,38 @@ function statColumn(parent, L, width, pct, thickness, fillCaption) {
   addBar(col, width, L.bar, pct, thickness);
 }
 
-// 「5時間 73% ↻04:40」（withReset の時はリセット時刻も短く添える）
+// 「↻04:40 73%」（列見出しが一番上にあるので、行ごとに窓の名前は書かない）
+// 並びは週間に寄せる: リセット（週間と同じアイコン画像＋時刻）→ 残量% の順。
+// withReset でない時は残量% だけ
 function statCaption(st, w, size, withReset, ctx) {
   st.layoutHorizontally();
   st.centerAlignContent();
-  const label = st.addText(String(w.label || ""));
-  label.font = Font.systemFont(size);
-  label.textColor = C.muted;
-  label.lineLimit = 1;
-  label.minimumScaleFactor = 0.7;
-  st.addSpacer(Math.round(size * 0.35));
+  if (withReset) {
+    const rt = shortResetText(w);
+    if (rt) {
+      let label = rt;
+      if (ctx.resetIcon) {
+        const icon = st.addImage(ctx.resetIcon);
+        icon.imageSize = sizeForHeight(ctx.resetIcon, Math.max(6, size - 2));
+        icon.tintColor = C.muted;
+        st.addSpacer(Math.max(1.5, Math.round(size * 0.5) / 2));
+      } else {
+        label = `↻${rt}`;
+      }
+      const r = st.addText(label);
+      r.font = roundedFont("medium", size);
+      r.textColor = C.muted;
+      r.lineLimit = 1;
+      r.minimumScaleFactor = 0.7;
+      st.addSpacer(Math.round(size * 0.5));
+    }
+  }
   const pct = remainingOf(w, ctx);
   const value = st.addText(pct == null ? "—" : `${Math.round(pct)}%`);
   value.font = roundedFont("semibold", size);
   value.textColor = pct == null ? C.muted : emphasis(Math.round(pct));
   value.lineLimit = 1;
   value.minimumScaleFactor = 0.7;
-  if (withReset) {
-    const rt = shortResetText(w);
-    if (rt) {
-      st.addSpacer(Math.round(size * 0.35));
-      const r = st.addText(`↻${rt}`);
-      r.font = roundedFont("medium", size);
-      r.textColor = C.muted;
-      r.lineLimit = 1;
-      r.minimumScaleFactor = 0.7;
-    }
-  }
 }
 
 // 「↻ 11/25 06:00」
