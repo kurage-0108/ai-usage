@@ -1,0 +1,90 @@
+{
+ "updated_at": "2026-11-22T23:36:57.441767+09:00",
+ "updated_text": "11/22 23:36",
+ "services": [
+  {
+   "id": "muse",
+   "name": "Muse（私）",
+   "plan": "Power",
+   "status": "ok",
+   "windows": [
+    {
+     "label": "週間",
+     "used_pct": 60.0,
+     "remaining_pct": 40.0,
+     "resets_at": null,
+     "reset_text": null
+    }
+   ]
+  },
+  {
+   "id": "claude",
+   "name": "Claude",
+   "plan": "Pro",
+   "status": "ok",
+   "windows": [
+    {
+     "label": "5時間",
+     "used_pct": 0.0,
+     "remaining_pct": 100.0,
+     "resets_at": null,
+     "reset_text": null
+    },
+    {
+     "label": "週間",
+     "used_pct": 10.0,
+     "remaining_pct": 90.0,
+     "resets_at": "2026-11-25T06:00:00.155172+09:00",
+     "reset_text": "11/25 06:00"
+    }
+   ]
+  },
+  {
+   "id": "chatgpt",
+   "name": "ChatGPT",
+   "plan": "Plus（Codex実測）",
+   "status": "ok",
+   "windows": [
+    {
+     "label": "5時間",
+     "used_pct": 0.0,
+     "remaining_pct": 100.0,
+     "resets_at": "2026-11-22T18:24:46+09:00",
+     "reset_text": "11/22 18:24",
+     "note": "窓はリセット済み"
+    },
+    {
+     "label": "週間",
+     "used_pct": 1.0,
+     "remaining_pct": 99.0,
+     "resets_at": "2026-11-28T10:35:20+09:00",
+     "reset_text": "11/28 10:35"
+    }
+   ],
+   "note": "Codex最終利用 2026-11-22T04:33:35.589Z の記録から算出"
+  },
+  {
+   "id": "gemini",
+   "name": "Antigravity",
+   "plan": "AI Pro",
+   "status": "unavailable",
+   "note": "残量はAntigravityアプリ内でのみ表示（consumer認証のため外部APIは403で取得不可・2026-11-22確認）"
+  },
+  {
+   "id": "grok",
+   "name": "Grok",
+   "plan": "Plus",
+   "status": "ok",
+   "windows": [
+    {
+     "label": "週間",
+     "used_pct": 81.0,
+     "remaining_pct": 19.0,
+     "resets_at": "2026-11-25T21:34:00+09:00",
+     "reset_text": "11/25 21:34"
+    }
+   ],
+   "note": "grok.com実測 11/22 23:35 時点（Grok Build 81%）"
+  }
+ ]
+}
