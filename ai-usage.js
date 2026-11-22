@@ -125,7 +125,8 @@ async function main() {
 const CACHE_FILE = "ai-usage-cache.json";
 
 async function loadData() {
-  const req = new Request(JSON_URL);
+  // 端末側やCDNのキャッシュが古いJSONを返すことがあるため、毎回クエリを付けて最新を取りに行く
+  const req = new Request(`${JSON_URL}?t=${Date.now()}`);
   req.timeoutInterval = 15;
   const text = await req.loadString();
   const data = JSON.parse(text);
