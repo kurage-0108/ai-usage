@@ -1,20 +1,12 @@
 // AI使用量ウィジェット（Scriptable）
 // 設定は不要です（データの URL は設定済み。ウィジェットのパラメータも空のままで動きます）。
-// 行をタップしても何も開きません（タップ動作は付けていません）。
+// 行をタップしても何も開きません（タップ動作は付けていません）。アイコンも付けていません。
+// 中・大サイズは一番上に列見出し（週間／5時間）を1行だけ表示します。
 // 小サイズは先頭3件、中・大サイズは5件まで表示します。
 
 const JSON_URL = "https://raw.githubusercontent.com/kurage-0108/ai-usage/main/usage.json";
 
 const REFRESH_MINUTES = 15;
-
-// サービス id → アイコン（SF Symbols。候補を先頭から試し、存在するものを使う）
-const SERVICES = {
-  muse: { url: "https://muse.ai", symbols: ["sparkles", "star.fill"] },
-  claude: { url: "claude://", symbols: ["asterisk", "staroflife.fill", "sun.max.fill"] },
-  chatgpt: { url: "chatgpt://", symbols: ["camera.aperture", "circle.hexagongrid.fill", "hexagon.fill"] },
-  gemini: { url: "https://antigravity.google", symbols: ["arrow.up", "chevron.up"] },
-  grok: { url: "https://grok.com", symbols: ["bolt.fill", "bolt"] },
-};
 
 // ---------- 色（ライト / ダーク） ----------
 
@@ -56,8 +48,8 @@ const LAYOUTS = {
   medium: {
     rows: 5, pad: [12, 14, 12, 14], maxSlot: 32, separators: true,
     badge: 20, radius: 5.5, glyph: 11, gap: 8,
-    name: 13,
-    secW: 54, mainW: 66, colGap: 10, capH: 12, capGap: 3, caption: 9.5, resetIcon: 7.5,
+    name: 13, header: 9.5, headerH: 12, headerGap: 4,
+    secW: 88, mainW: 66, colGap: 10, capH: 12, capGap: 3, caption: 9.5, resetIcon: 7.5,
     bar: 4, miniBar: 3,
     heroGap: 6, heroDigits: 19, heroPct: 11, heroW: 52,
     note: 10,
@@ -65,7 +57,7 @@ const LAYOUTS = {
   large: {
     rows: 5, pad: [16, 16, 16, 16], maxSlot: 72, separators: true,
     badge: 26, radius: 7, glyph: 14, gap: 10,
-    name: 15, reset: 11, resetIcon: 9, resetW: 88,
+    name: 15, header: 10.5, headerH: 14, headerGap: 6, reset: 11, resetIcon: 9, resetW: 88,
     secW: 66, colGap: 12, caption: 10.5, secReset: 9.5, secResetIcon: 8,
     tierGap: 7, bar: 6, miniBar: 4,
     heroDigits: 26, heroPct: 14, heroW: 66,
@@ -139,13 +131,12 @@ function buildWidget(services, family, L) {
   const n = services.length;
   const separators = L.separators ? n - 1 : 0;
   // 行は高さ固定のスロットで並べる（見積もりが実寸より小さい時は全体が中央に寄るだけ）
-  const avail = size.h - pt - pb - separators * hair;
+  const headerH = family === "small" ? 0 : L.headerH + L.headerGap;
+  const avail = size.h - pt - pb - separators * hair - headerH;
   const ctx = {
     contentW: size.w - pl - pr,
     slot: Math.min(L.maxSlot, Math.floor((avail / n) * 2) / 2),
-    glyphs: loadGlyphs(services),
     resetIcon: symbolImage(["arrow.clockwise"], "medium"),
-    links: false,
   };
 
   const widget = new ListWidget();
@@ -153,15 +144,18 @@ function buildWidget(services, family, L) {
   widget.setPadding(pt, pl, pb, pr);
   widget.spacing = 0;
 
+  if (family !== "small") {
+    addHeader(widget, services, L);
+    widget.addSpacer(L.headerGap);
+  }
+
   services.forEach((s, i) => {
-    if (i > 0 && L.separators) addSeparator(widget, L.badge + L.gap, hair);
+    if (i > 0 && L.separators) addSeparator(widget, 0, hair);
     const row = widget.addStack();
     row.layoutHorizontally();
     row.centerAlignContent();
     row.spacing = 0;
     row.size = new Size(0, ctx.slot);
-    const url = ctx.links ? urlFor(s) : null;
-    if (url) row.url = url;
 
     if (family === "small") smallRow(row, s, L, ctx);
     else if (family === "large") largeRow(row, s, L, ctx);
@@ -170,11 +164,9 @@ function buildWidget(services, family, L) {
   return widget;
 }
 
-// 中: [アイコン] 名前 …… [5時間 % / ミニバー] [↻ リセット / バー] 残り%
+// 中: 名前 …… [5時間 % ↻リセット / ミニバー] [↻ リセット / バー] 残り%
 function mediumRow(row, s, L, ctx) {
   const { primary, secondary } = pickWindows(s);
-  addBadge(row, s, L, ctx, !primary);
-  row.addSpacer(L.gap);
   addName(row, s, L.name, !primary);
   row.addSpacer();
   if (!primary) {
@@ -183,7 +175,7 @@ function mediumRow(row, s, L, ctx) {
   }
   if (secondary) {
     statColumn(row, L, L.secW, remainingOf(secondary), L.miniBar,
-      (cap) => statCaption(cap, secondary, L.caption));
+      (cap) => statCaption(cap, secondary, L.caption, true));
     row.addSpacer(L.colGap);
   }
   const reset = resetText(primary);
@@ -193,8 +185,8 @@ function mediumRow(row, s, L, ctx) {
   addHero(row, remainingOf(primary), L, L.heroW);
 }
 
-// 大: 1段目 [アイコン] 名前 …… [5時間 % / ミニバー / ↻] 残り%
-//     2段目 名前の位置から始まるバー …… ↻ リセット（残り% の真下、右端にそろえる）
+// 大: 1段目 名前 …… [5時間 % / ミニバー / ↻] 残り%
+//     2段目 左端から始まるバー …… ↻ リセット（残り% の真下、右端にそろえる）
 function largeRow(row, s, L, ctx) {
   const { primary, secondary } = pickWindows(s);
   const body = row.addStack();
@@ -204,8 +196,6 @@ function largeRow(row, s, L, ctx) {
   const top = body.addStack();
   top.layoutHorizontally();
   top.centerAlignContent();
-  addBadge(top, s, L, ctx, !primary);
-  top.addSpacer(L.gap);
   addName(top, s, L.name, !primary);
   top.addSpacer();
   if (!primary) {
@@ -226,7 +216,7 @@ function largeRow(row, s, L, ctx) {
   addHero(top, remainingOf(primary), L, L.heroW);
 
   // バーは全行同じ長さ。幅の見積もり誤差は、バーとリセット時刻の間の余白が吸収する
-  const indent = L.badge + L.gap;
+  const indent = 0;
   const bottom = body.addStack();
   bottom.layoutHorizontally();
   bottom.centerAlignContent();
@@ -237,12 +227,10 @@ function largeRow(row, s, L, ctx) {
   if (reset) resetCaption(bottom.addStack(), reset, L.reset, L.resetIcon, ctx);
 }
 
-// 小: [アイコン] 名前
-//            バー …… 残り%
+// 小: 名前
+//     バー …… 残り%
 function smallRow(row, s, L, ctx) {
   const { primary } = pickWindows(s);
-  addBadge(row, s, L, ctx, !primary);
-  row.addSpacer(L.gap);
   const col = row.addStack();
   col.layoutVertically();
   col.spacing = L.lineGap;
@@ -256,7 +244,7 @@ function smallRow(row, s, L, ctx) {
     return;
   }
   const pct = remainingOf(primary);
-  const barW = Math.max(24, Math.floor(ctx.contentW - L.badge - L.gap - L.heroMax - 8));
+  const barW = Math.max(24, Math.floor(ctx.contentW - L.heroMax - 8));
   addBar(line, barW, L.bar, pct);
   line.addSpacer();
   addHero(line, pct, L, 0);
@@ -264,32 +252,29 @@ function smallRow(row, s, L, ctx) {
 
 // ---------- 部品 ----------
 
-function addBadge(parent, s, L, ctx, muted) {
-  const badge = parent.addStack();
-  badge.layoutHorizontally();
-  badge.centerAlignContent();
-  badge.size = new Size(L.badge, L.badge);
-  badge.cornerRadius = L.radius;
-  badge.backgroundColor = C.badge;
-  const url = ctx.links ? urlFor(s) : null;
-  if (url) badge.url = url;
-
-  badge.addSpacer();
-  const img = ctx.glyphs.images[s.id];
-  if (img) {
-    // 全アイコンを同じ倍率で縮小し、SF Symbols 本来の大きさの釣り合いを保つ
-    const k = L.glyph / ctx.glyphs.maxDim;
-    const icon = badge.addImage(img);
-    icon.imageSize = new Size(img.size.width * k, img.size.height * k);
-    icon.tintColor = muted ? C.muted : C.glyph;
-    if (url) icon.url = url;
-  } else {
-    const t = badge.addText(displayName(s).charAt(0).toUpperCase());
-    t.font = roundedFont("bold", L.glyph);
-    t.textColor = muted ? C.muted : C.glyph;
-    t.lineLimit = 1;
+// 一番上に1行だけ置く列見出し（5時間／週間）。列の並びは各行の列とそろえる
+function addHeader(widget, services, L) {
+  const head = widget.addStack();
+  head.layoutHorizontally();
+  head.centerAlignContent();
+  head.size = new Size(0, L.headerH);
+  head.addSpacer();
+  const hasSec = services.some((s) => pickWindows(s).secondary);
+  if (hasSec) {
+    const c1 = head.addStack();
+    c1.size = new Size(L.secW, 0);
+    const t1 = c1.addText("5時間");
+    t1.font = Font.systemFont(L.header);
+    t1.textColor = C.muted;
+    t1.lineLimit = 1;
+    head.addSpacer(L.colGap);
   }
-  badge.addSpacer();
+  const c2 = head.addStack();
+  c2.size = new Size(L.mainW || L.heroW, 0);
+  const t2 = c2.addText("週間");
+  t2.font = Font.systemFont(L.header);
+  t2.textColor = C.muted;
+  t2.lineLimit = 1;
 }
 
 function addName(parent, s, size, muted) {
@@ -355,8 +340,8 @@ function statColumn(parent, L, width, pct, thickness, fillCaption) {
   addBar(col, width, L.bar, pct, thickness);
 }
 
-// 「5時間 73%」
-function statCaption(st, w, size) {
+// 「5時間 73% ↻04:40」（withReset の時はリセット時刻も短く添える）
+function statCaption(st, w, size, withReset) {
   st.layoutHorizontally();
   st.centerAlignContent();
   const label = st.addText(String(w.label || ""));
@@ -371,6 +356,17 @@ function statCaption(st, w, size) {
   value.textColor = pct == null ? C.muted : emphasis(Math.round(pct));
   value.lineLimit = 1;
   value.minimumScaleFactor = 0.7;
+  if (withReset) {
+    const rt = shortResetText(w);
+    if (rt) {
+      st.addSpacer(Math.round(size * 0.35));
+      const r = st.addText(`↻${rt}`);
+      r.font = roundedFont("medium", size);
+      r.textColor = C.muted;
+      r.lineLimit = 1;
+      r.minimumScaleFactor = 0.7;
+    }
+  }
 }
 
 // 「↻ 11/25 06:00」
@@ -457,21 +453,7 @@ function messageWidget(message, L) {
   return widget;
 }
 
-// ---------- アイコン ----------
-
-function loadGlyphs(services) {
-  const images = {};
-  let maxDim = 0;
-  for (const s of services) {
-    const meta = SERVICES[s.id];
-    const img = meta ? symbolImage(meta.symbols, "semibold") : null;
-    if (img) {
-      images[s.id] = img;
-      maxDim = Math.max(maxDim, img.size.width, img.size.height);
-    }
-  }
-  return { images, maxDim };
-}
+// ---------- シンボル ----------
 
 function symbolImage(names, weight) {
   if (typeof SFSymbol === "undefined") return null;
@@ -505,11 +487,6 @@ function displayName(s) {
   return s.id != null ? String(s.id) : "—";
 }
 
-function urlFor(s) {
-  const meta = SERVICES[s.id];
-  return meta ? meta.url : null;
-}
-
 // 主役は「週間」の窓（なければ最後の窓）、もう1つの窓を補助として小さく出す
 function pickWindows(s) {
   const list = Array.isArray(s.windows) ? s.windows.filter(isObject) : [];
@@ -541,6 +518,22 @@ function resetText(w) {
   const at = parseTime(w.resets_at);
   if (at != null && at <= Date.now()) return null;
   return text;
+}
+
+// 狭い列向けの短いリセット表記。当日なら「04:40」、別日なら「11/25」
+function shortResetText(w) {
+  const full = resetText(w);
+  if (!full) return null;
+  const at = parseTime(w.resets_at);
+  if (at == null) return full;
+  const d = new Date(at);
+  const now = new Date();
+  const hh = String(d.getHours()).padStart(2, "0");
+  const mm = String(d.getMinutes()).padStart(2, "0");
+  if (d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate()) {
+    return `${hh}:${mm}`;
+  }
+  return `${d.getMonth() + 1}/${d.getDate()}`;
 }
 
 function parseTime(v) {
