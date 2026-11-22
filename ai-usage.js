@@ -1,7 +1,7 @@
 // AI使用量ウィジェット（Scriptable）
 // 設定は不要です（データの URL は設定済み。ウィジェットのパラメータも空のままで動きます）。
 // 行をタップしても何も開きません（タップ動作は付けていません）。アイコンも付けていません。
-// 中・大サイズは一番上に列見出し（週間／5時間）を1行だけ表示します。
+// 中・大サイズは一番上に列見出し（週間／5時間）を1行だけ表示し、左端にデータの更新時刻を出します。
 // 小サイズは先頭3件、中・大サイズは5件まで表示します。
 
 const JSON_URL = "https://raw.githubusercontent.com/kurage-0108/ai-usage/main/usage.json";
@@ -100,7 +100,7 @@ async function main() {
     widget = messageWidget("データを取得できませんでした", L);
   } else {
     try {
-      widget = buildWidget(services, family, L);
+      widget = buildWidget(services, family, L, data.updated_text);
     } catch (e) {
       console.error(e);
       widget = messageWidget("表示できませんでした", L);
@@ -124,7 +124,7 @@ async function loadData() {
   return data;
 }
 
-function buildWidget(services, family, L) {
+function buildWidget(services, family, L, updatedText) {
   const size = widgetSize(family);
   const [pt, pl, pb, pr] = L.pad;
   const hair = hairline();
@@ -145,7 +145,7 @@ function buildWidget(services, family, L) {
   widget.spacing = 0;
 
   if (family !== "small") {
-    addHeader(widget, services, L);
+    addHeader(widget, services, L, family, updatedText, ctx);
     widget.addSpacer(L.headerGap);
   }
 
@@ -252,12 +252,25 @@ function smallRow(row, s, L, ctx) {
 
 // ---------- 部品 ----------
 
-// 一番上に1行だけ置く列見出し（5時間／週間）。列の並びは各行の列とそろえる
-function addHeader(widget, services, L) {
+// 一番上に1行だけ置く列見出し（5時間／週間）。左端にデータの更新時刻（アイコン＋時刻）。
+// 列の並びは各行とまったく同じ幅構成にして、見出しと列の位置をそろえる
+function addHeader(widget, services, L, family, updatedText, ctx) {
   const head = widget.addStack();
   head.layoutHorizontally();
   head.centerAlignContent();
   head.size = new Size(0, L.headerH);
+  if (typeof updatedText === "string" && updatedText.trim()) {
+    if (ctx.resetIcon) {
+      const icon = head.addImage(ctx.resetIcon);
+      icon.imageSize = sizeForHeight(ctx.resetIcon, Math.max(6, L.header - 2));
+      icon.tintColor = C.muted;
+      head.addSpacer(3);
+    }
+    const u = head.addText(updatedText.trim());
+    u.font = roundedFont("medium", L.header);
+    u.textColor = C.muted;
+    u.lineLimit = 1;
+  }
   head.addSpacer();
   const hasSec = services.some((s) => pickWindows(s).secondary);
   if (hasSec) {
@@ -275,6 +288,12 @@ function addHeader(widget, services, L) {
   t2.font = Font.systemFont(L.header);
   t2.textColor = C.muted;
   t2.lineLimit = 1;
+  if (family === "medium") {
+    // 中サイズの行は主列の右に残り% の列がある。見出し側にも同じ幅を空けないと列が右にずれる
+    head.addSpacer(L.heroGap);
+    const tail = head.addStack();
+    tail.size = new Size(L.heroW, 0);
+  }
 }
 
 function addName(parent, s, size, muted) {
