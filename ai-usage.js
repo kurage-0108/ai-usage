@@ -2,6 +2,7 @@
 // 設定は不要です（データの URL は設定済み。ウィジェットのパラメータも空のままで動きます）。
 // 行をタップしても何も開きません（タップ動作は付けていません）。アイコンも付けていません。
 // 中・大サイズは一番上に列見出し（週間／5時間）を1行だけ表示し、左端にデータの更新時刻を出します。
+// 取得に失敗した時は前回成功時のデータを表示し、古いデータの間は更新時刻を警告色にします。
 // 小サイズは先頭3件、中・大サイズは5件まで表示します。
 
 const JSON_URL = "https://raw.githubusercontent.com/kurage-0108/ai-usage/main/usage.json";
@@ -88,10 +89,13 @@ async function main() {
   const L = LAYOUTS[family];
 
   let data = null;
+  let fromCache = false;
   try {
     data = await loadData();
   } catch (e) {
     console.log(`usage.json を取得できませんでした: ${e}`);
+    data = loadCache();
+    fromCache = !!data;
   }
 
   const services = data ? data.services.filter(isObject).slice(0, L.rows) : [];
@@ -100,7 +104,9 @@ async function main() {
     widget = messageWidget("データを取得できませんでした", L);
   } else {
     try {
-      widget = buildWidget(services, family, L, data.updated_text);
+      const updatedAtMs = parseTime(data.updated_at);
+      const stale = fromCache || (updatedAtMs != null && Date.now() - updatedAtMs > 2 * 60 * 60 * 1000);
+      widget = buildWidget(services, family, L, { updatedText: data.updated_text, updatedAtMs, stale });
     } catch (e) {
       console.error(e);
       widget = messageWidget("表示できませんでした", L);
@@ -116,15 +122,38 @@ async function main() {
   Script.complete();
 }
 
+const CACHE_FILE = "ai-usage-cache.json";
+
 async function loadData() {
   const req = new Request(JSON_URL);
   req.timeoutInterval = 15;
-  const data = await req.loadJSON();
+  const text = await req.loadString();
+  const data = JSON.parse(text);
   if (!isObject(data) || !Array.isArray(data.services)) throw new Error("想定外の形式");
+  try {
+    const fm = FileManager.local();
+    fm.writeString(fm.joinPath(fm.cacheDirectory(), CACHE_FILE), text);
+  } catch (e) {
+    // キャッシュ保存の失敗は表示に影響させない
+  }
   return data;
 }
 
-function buildWidget(services, family, L, updatedText) {
+// 取得に失敗した時は、前回成功した時のデータを返す
+function loadCache() {
+  try {
+    const fm = FileManager.local();
+    const path = fm.joinPath(fm.cacheDirectory(), CACHE_FILE);
+    if (!fm.fileExists(path)) return null;
+    const data = JSON.parse(fm.readString(path));
+    if (!isObject(data) || !Array.isArray(data.services)) return null;
+    return data;
+  } catch (e) {
+    return null;
+  }
+}
+
+function buildWidget(services, family, L, meta) {
   const size = widgetSize(family);
   const [pt, pl, pb, pr] = L.pad;
   const hair = hairline();
@@ -137,6 +166,7 @@ function buildWidget(services, family, L, updatedText) {
     contentW: size.w - pl - pr,
     slot: Math.min(L.maxSlot, Math.floor((avail / n) * 2) / 2),
     resetIcon: symbolImage(["arrow.clockwise"], "medium"),
+    updatedAtMs: meta.updatedAtMs,
   };
 
   const widget = new ListWidget();
@@ -145,7 +175,7 @@ function buildWidget(services, family, L, updatedText) {
   widget.spacing = 0;
 
   if (family !== "small") {
-    addHeader(widget, services, L, family, updatedText, ctx);
+    addHeader(widget, services, L, family, meta, ctx);
     widget.addSpacer(L.headerGap);
   }
 
@@ -167,22 +197,23 @@ function buildWidget(services, family, L, updatedText) {
 // 中: 名前 …… [5時間 % ↻リセット / ミニバー] [↻ リセット / バー] 残り%
 function mediumRow(row, s, L, ctx) {
   const { primary, secondary } = pickWindows(s);
-  addName(row, s, L.name, !primary);
+  const none = !primary && !secondary;
+  addName(row, s, L.name, none);
   row.addSpacer();
-  if (!primary) {
+  if (none) {
     addNote(row, statusText(s), L.note);
     return;
   }
   if (secondary) {
-    statColumn(row, L, L.secW, remainingOf(secondary), L.miniBar,
-      (cap) => statCaption(cap, secondary, L.caption, true));
+    statColumn(row, L, L.secW, remainingOf(secondary, ctx), L.miniBar,
+      (cap) => statCaption(cap, secondary, L.caption, true, ctx));
     row.addSpacer(L.colGap);
   }
   const reset = resetText(primary);
-  statColumn(row, L, L.mainW, remainingOf(primary), L.bar,
+  statColumn(row, L, L.mainW, remainingOf(primary, ctx), L.bar,
     reset ? (cap) => resetCaption(cap, reset, L.caption, L.resetIcon, ctx) : null);
   row.addSpacer(L.heroGap);
-  addHero(row, remainingOf(primary), L, L.heroW);
+  addHero(row, remainingOf(primary, ctx), L, L.heroW);
 }
 
 // 大: 1段目 名前 …… [5時間 % / ミニバー / ↻] 残り%
@@ -196,9 +227,10 @@ function largeRow(row, s, L, ctx) {
   const top = body.addStack();
   top.layoutHorizontally();
   top.centerAlignContent();
-  addName(top, s, L.name, !primary);
+  const none = !primary && !secondary;
+  addName(top, s, L.name, none);
   top.addSpacer();
-  if (!primary) {
+  if (none) {
     addNote(top, statusText(s), L.note);
     return;
   }
@@ -207,13 +239,13 @@ function largeRow(row, s, L, ctx) {
     col.layoutVertically();
     col.spacing = 3;
     col.size = new Size(L.secW, 0);
-    statCaption(col.addStack(), secondary, L.caption);
-    addBar(col, L.secW, L.miniBar, remainingOf(secondary));
+    statCaption(col.addStack(), secondary, L.caption, false, ctx);
+    addBar(col, L.secW, L.miniBar, remainingOf(secondary, ctx));
     const secReset = resetText(secondary);
     if (secReset) resetCaption(col.addStack(), secReset, L.secReset, L.secResetIcon, ctx);
     top.addSpacer(L.colGap);
   }
-  addHero(top, remainingOf(primary), L, L.heroW);
+  addHero(top, remainingOf(primary, ctx), L, L.heroW);
 
   // バーは全行同じ長さ。幅の見積もり誤差は、バーとリセット時刻の間の余白が吸収する
   const indent = 0;
@@ -221,7 +253,7 @@ function largeRow(row, s, L, ctx) {
   bottom.layoutHorizontally();
   bottom.centerAlignContent();
   bottom.setPadding(0, indent, 0, 0);
-  addBar(bottom, Math.floor(ctx.contentW - indent - L.resetW), L.bar, remainingOf(primary));
+  addBar(bottom, Math.floor(ctx.contentW - indent - L.resetW), L.bar, remainingOf(primary, ctx));
   bottom.addSpacer();
   const reset = resetText(primary);
   if (reset) resetCaption(bottom.addStack(), reset, L.reset, L.resetIcon, ctx);
@@ -230,20 +262,21 @@ function largeRow(row, s, L, ctx) {
 // 小: 名前
 //     バー …… 残り%
 function smallRow(row, s, L, ctx) {
-  const { primary } = pickWindows(s);
+  const { primary, secondary } = pickWindows(s);
+  const w = primary || secondary;
   const col = row.addStack();
   col.layoutVertically();
   col.spacing = L.lineGap;
-  addName(col, s, L.name, !primary);
+  addName(col, s, L.name, !w);
   const line = col.addStack();
   line.layoutHorizontally();
   line.centerAlignContent();
-  if (!primary) {
+  if (!w) {
     addNote(line, statusText(s), L.note);
     line.addSpacer();
     return;
   }
-  const pct = remainingOf(primary);
+  const pct = remainingOf(w, ctx);
   const barW = Math.max(24, Math.floor(ctx.contentW - L.heroMax - 8));
   addBar(line, barW, L.bar, pct);
   line.addSpacer();
@@ -254,21 +287,24 @@ function smallRow(row, s, L, ctx) {
 
 // 一番上に1行だけ置く列見出し（5時間／週間）。左端にデータの更新時刻（アイコン＋時刻）。
 // 列の並びは各行とまったく同じ幅構成にして、見出しと列の位置をそろえる
-function addHeader(widget, services, L, family, updatedText, ctx) {
+function addHeader(widget, services, L, family, meta, ctx) {
   const head = widget.addStack();
   head.layoutHorizontally();
   head.centerAlignContent();
   head.size = new Size(0, L.headerH);
+  const updatedText = meta.updatedText;
   if (typeof updatedText === "string" && updatedText.trim()) {
+    // 古いデータ（キャッシュ利用時・更新停止時）は更新時刻を警告色にして区別する
+    const color = meta.stale ? C.warn : C.muted;
     if (ctx.resetIcon) {
       const icon = head.addImage(ctx.resetIcon);
       icon.imageSize = sizeForHeight(ctx.resetIcon, Math.max(6, L.header - 2));
-      icon.tintColor = C.muted;
+      icon.tintColor = color;
       head.addSpacer(3);
     }
     const u = head.addText(updatedText.trim());
     u.font = roundedFont("medium", L.header);
-    u.textColor = C.muted;
+    u.textColor = color;
     u.lineLimit = 1;
   }
   head.addSpacer();
@@ -360,7 +396,7 @@ function statColumn(parent, L, width, pct, thickness, fillCaption) {
 }
 
 // 「5時間 73% ↻04:40」（withReset の時はリセット時刻も短く添える）
-function statCaption(st, w, size, withReset) {
+function statCaption(st, w, size, withReset, ctx) {
   st.layoutHorizontally();
   st.centerAlignContent();
   const label = st.addText(String(w.label || ""));
@@ -369,7 +405,7 @@ function statCaption(st, w, size, withReset) {
   label.lineLimit = 1;
   label.minimumScaleFactor = 0.7;
   st.addSpacer(Math.round(size * 0.35));
-  const pct = remainingOf(w);
+  const pct = remainingOf(w, ctx);
   const value = st.addText(pct == null ? "—" : `${Math.round(pct)}%`);
   value.font = roundedFont("semibold", size);
   value.textColor = pct == null ? C.muted : emphasis(Math.round(pct));
@@ -506,13 +542,13 @@ function displayName(s) {
   return s.id != null ? String(s.id) : "—";
 }
 
-// 主役は「週間」の窓（なければ最後の窓）、もう1つの窓を補助として小さく出す
+// 主列は「週間」の窓に固定し、もう1つの窓を補助として小さく出す。
+// 週間が欠けている行は主列を空（—）にし、別の期間の数値を週間として見せない
 function pickWindows(s) {
   const list = Array.isArray(s.windows) ? s.windows.filter(isObject) : [];
-  if (!list.length) return { primary: null, secondary: null };
-  let i = list.findIndex((w) => w.label === "週間");
-  if (i < 0) i = list.length - 1;
-  return { primary: list[i], secondary: list.find((_, j) => j !== i) || null };
+  const primary = list.find((w) => w.label === "週間") || null;
+  const secondary = list.find((w) => w !== primary) || null;
+  return { primary, secondary };
 }
 
 function toNumber(v) {
@@ -520,8 +556,12 @@ function toNumber(v) {
   return Number.isFinite(n) ? n : null;
 }
 
-function remainingOf(w) {
+function remainingOf(w, ctx) {
   if (!w) return null;
+  // データ取得後にリセットを過ぎた窓は、古い残量を現在値として出さない。
+  // 取得時刻より前にリセット済みの窓は、生成側が反映済みなのでそのまま出す
+  const at = parseTime(w.resets_at);
+  if (at != null && at <= Date.now() && ctx && ctx.updatedAtMs != null && ctx.updatedAtMs < at) return null;
   let r = toNumber(w.remaining_pct);
   if (r == null) {
     const used = toNumber(w.used_pct);
@@ -546,12 +586,10 @@ function shortResetText(w) {
   const at = parseTime(w.resets_at);
   if (at == null) return full;
   const d = new Date(at);
-  const now = new Date();
   const hh = String(d.getHours()).padStart(2, "0");
   const mm = String(d.getMinutes()).padStart(2, "0");
-  if (d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate()) {
-    return `${hh}:${mm}`;
-  }
+  // 24時間以内なら時刻、それより先なら日付。当日判定だと日付またぎで肝心の時刻が消える
+  if (at - Date.now() < 24 * 60 * 60 * 1000) return `${hh}:${mm}`;
   return `${d.getMonth() + 1}/${d.getDate()}`;
 }
 
@@ -562,7 +600,7 @@ function parseTime(v) {
 }
 
 function statusText(s) {
-  return s.status === "unavailable" ? "アプリ内のみ" : "取得できません";
+  return s.status === "manual" ? "手動確認" : "取得できません";
 }
 
 // 残り% → 緑（>45）/ 琥珀（≤45）/ 赤（≤20）
