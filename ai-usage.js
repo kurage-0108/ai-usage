@@ -20,7 +20,7 @@ const C = {
   bg: dyn("#FFFFFF", "#1C1C1E"),
   text: dyn("#1D1D1F", "#F5F5F7"),
   muted: dyn("#7C7C80", "#98989D"),
-  separator: dyn("#DCDCE0", "#3A3A3C"),
+  separator: dyn("#E8E8EC", "#2C2C2E"),
   badge: dyn("#F0F0F3", "#2C2C2E"),
   glyph: dyn("#3A3A3C", "#E5E5EA"),
   warn: dyn("#C26A00", "#FFB340"),
@@ -47,12 +47,12 @@ const LAYOUTS = {
     note: 10,
   },
   medium: {
-    rows: 5, pad: [12, 14, 12, 14], maxSlot: 32, separators: true,
+    rows: 5, pad: [10, 14, 10, 14], maxSlot: 32, separators: true,
     badge: 20, radius: 5.5, glyph: 11, gap: 8,
     name: 13, header: 9.5, headerH: 12, headerGap: 4,
-    secW: 66, mainW: 66, colGap: 10, capH: 12, capGap: 3, caption: 9.5, resetIcon: 7.5,
+    secW: 68, mainW: 84, colGap: 18, capH: 12, capGap: 2, caption: 9.5, resetIcon: 7.5,
     bar: 4, miniBar: 3,
-    heroGap: 6, heroDigits: 19, heroPct: 11, heroW: 52,
+    heroGap: 4, heroDigits: 19, heroPct: 11, heroW: 46,
     note: 10,
   },
   large: {
@@ -166,6 +166,7 @@ function buildWidget(services, family, L, meta) {
     contentW: size.w - pl - pr,
     slot: Math.min(L.maxSlot, Math.floor((avail / n) * 2) / 2),
     resetIcon: symbolImage(["arrow.clockwise"], "medium"),
+    clockIcon: symbolImage(["clock"], "medium"),
     updatedAtMs: meta.updatedAtMs,
   };
 
@@ -296,9 +297,11 @@ function addHeader(widget, services, L, family, meta, ctx) {
   if (typeof updatedText === "string" && updatedText.trim()) {
     // 古いデータ（キャッシュ利用時・更新停止時）は更新時刻を警告色にして区別する
     const color = meta.stale ? C.warn : C.muted;
-    if (ctx.resetIcon) {
-      const icon = head.addImage(ctx.resetIcon);
-      icon.imageSize = sizeForHeight(ctx.resetIcon, Math.max(6, L.header - 2));
+    // 更新時刻は「過去」の印として時計アイコンにする（各行のリセット時刻の↻と区別する）
+    const updIcon = ctx.clockIcon || ctx.resetIcon;
+    if (updIcon) {
+      const icon = head.addImage(updIcon);
+      icon.imageSize = sizeForHeight(updIcon, Math.max(6, L.header - 2));
       icon.tintColor = color;
       head.addSpacer(3);
     }
@@ -311,19 +314,25 @@ function addHeader(widget, services, L, family, meta, ctx) {
   const hasSec = services.some((s) => pickWindows(s).secondary);
   if (hasSec) {
     const c1 = head.addStack();
+    c1.layoutHorizontally();
     c1.size = new Size(L.secW, 0);
     const t1 = c1.addText("5時間");
-    t1.font = Font.systemFont(L.header);
+    t1.font = systemFont("semibold", L.header);
     t1.textColor = C.muted;
     t1.lineLimit = 1;
+    c1.addSpacer();
     head.addSpacer(L.colGap);
   }
   const c2 = head.addStack();
+  c2.layoutHorizontally();
   c2.size = new Size(L.mainW || L.heroW, 0);
+  // 中サイズは直下の列の左端にそろえる。大サイズの直下は右寄せの大きな数字なので右に寄せる
+  if (family !== "medium") c2.addSpacer();
   const t2 = c2.addText("週間");
-  t2.font = Font.systemFont(L.header);
+  t2.font = systemFont("semibold", L.header);
   t2.textColor = C.muted;
   t2.lineLimit = 1;
+  if (family === "medium") c2.addSpacer();
   if (family === "medium") {
     // 中サイズの行は主列の右に残り% の列がある。見出し側にも同じ幅を空けないと列が右にずれる
     head.addSpacer(L.heroGap);
@@ -390,7 +399,7 @@ function statColumn(parent, L, width, pct, thickness, fillCaption) {
   const cap = col.addStack();
   cap.layoutHorizontally();
   cap.centerAlignContent();
-  cap.size = new Size(0, L.capH);
+  cap.size = new Size(width, L.capH);
   if (fillCaption) fillCaption(cap);
   addBar(col, width, L.bar, pct, thickness);
 }
@@ -418,7 +427,8 @@ function statCaption(st, w, size, withReset, ctx) {
       r.textColor = C.muted;
       r.lineLimit = 1;
       r.minimumScaleFactor = 0.7;
-      st.addSpacer(Math.round(size * 0.5));
+      // 残量% は列の右端に寄せ、% の縦列をミニバーの右端とそろえる
+      st.addSpacer();
     }
   }
   const pct = remainingOf(w, ctx);
@@ -471,7 +481,8 @@ function addBar(parent, width, height, pct, thickness) {
 // 角丸のトラック＋角丸の塗り。0% はトラックのみ、0% より上は最低でも丸1つ分を塗る
 function barImage(width, height, pct, thickness) {
   const t = Math.min(height, thickness);
-  const y = height - t;
+  // 細いバーは枠の中央に置く（下端寄せだとキャプションとの間隔が列ごとにずれて見える）
+  const y = (height - t) / 2;
   const ctx = new DrawContext();
   ctx.opaque = false;
   ctx.respectScreenScale = true;
