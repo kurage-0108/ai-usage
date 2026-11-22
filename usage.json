@@ -1,22 +1,7 @@
 {
- "updated_at": "2026-11-23T00:18:40.830552+09:00",
- "updated_text": "11/23 00:18",
+ "updated_at": "2026-11-23T00:50:07.419647+09:00",
+ "updated_text": "11/23 00:50",
  "services": [
-  {
-   "id": "muse",
-   "name": "Muse（私）",
-   "plan": "Power",
-   "status": "ok",
-   "windows": [
-    {
-     "label": "週間",
-     "used_pct": 61.0,
-     "remaining_pct": 39.0,
-     "resets_at": null,
-     "reset_text": null
-    }
-   ]
-  },
   {
    "id": "claude",
    "name": "Claude",
@@ -25,17 +10,17 @@
    "windows": [
     {
      "label": "5時間",
-     "used_pct": 90.0,
-     "remaining_pct": 10.0,
-     "resets_at": "2026-11-23T04:39:59.580084+09:00",
-     "reset_text": "11/23 04:39"
+     "used_pct": 100.0,
+     "remaining_pct": 0.0,
+     "resets_at": "2026-11-23T04:40:00.408569+09:00",
+     "reset_text": "11/23 04:40"
     },
     {
      "label": "週間",
-     "used_pct": 17.0,
-     "remaining_pct": 83.0,
-     "resets_at": "2026-11-25T05:59:59.580107+09:00",
-     "reset_text": "11/25 05:59"
+     "used_pct": 19.0,
+     "remaining_pct": 81.0,
+     "resets_at": "2026-11-25T06:00:00.408593+09:00",
+     "reset_text": "11/25 06:00"
     }
    ]
   },
@@ -71,10 +56,10 @@
    "windows": [
     {
      "label": "5時間",
-     "used_pct": 33.8,
-     "remaining_pct": 66.2,
-     "resets_at": "2026-11-23T00:39:38+09:00",
-     "reset_text": "11/23 00:39"
+     "used_pct": 0.0,
+     "remaining_pct": 100.0,
+     "resets_at": null,
+     "reset_text": null
     },
     {
      "label": "週間",
@@ -82,6 +67,21 @@
      "remaining_pct": 89.8,
      "resets_at": "2026-11-29T14:39:38+09:00",
      "reset_text": "11/29 14:39"
+    }
+   ]
+  },
+  {
+   "id": "muse",
+   "name": "Muse",
+   "plan": "Power",
+   "status": "ok",
+   "windows": [
+    {
+     "label": "週間",
+     "used_pct": 61.0,
+     "remaining_pct": 39.0,
+     "resets_at": "2026-11-23T17:12:00+09:00",
+     "reset_text": "11/23 17:12"
     }
    ]
   },
