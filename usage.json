@@ -1,6 +1,6 @@
 {
- "updated_at": "2026-11-23T15:57:41.722570+09:00",
- "updated_text": "11/23 15:57",
+ "updated_at": "2026-11-23T16:27:41.703798+09:00",
+ "updated_text": "11/23 16:27",
  "services": [
   {
    "id": "claude",
@@ -12,15 +12,15 @@
      "label": "5時間",
      "used_pct": 100.0,
      "remaining_pct": 0.0,
-     "resets_at": "2026-11-23T16:49:59.703100+09:00",
-     "reset_text": "11/23 16:49"
+     "resets_at": "2026-11-23T16:50:00.340329+09:00",
+     "reset_text": "11/23 16:50"
     },
     {
      "label": "週間",
      "used_pct": 33.0,
      "remaining_pct": 67.0,
-     "resets_at": "2026-11-25T05:59:59.703121+09:00",
-     "reset_text": "11/25 05:59"
+     "resets_at": "2026-11-25T06:00:00.340347+09:00",
+     "reset_text": "11/25 06:00"
     }
    ]
   },
@@ -29,23 +29,8 @@
    "name": "ChatGPT",
    "plan": "Plus（Codex実測）",
    "status": "ok",
-   "windows": [
-    {
-     "label": "5時間",
-     "used_pct": 71.0,
-     "remaining_pct": 29.0,
-     "resets_at": "2026-11-23T18:47:33+09:00",
-     "reset_text": "11/23 18:47"
-    },
-    {
-     "label": "週間",
-     "used_pct": 30.0,
-     "remaining_pct": 70.0,
-     "resets_at": "2026-11-28T10:35:20+09:00",
-     "reset_text": "11/28 10:35"
-    }
-   ],
-   "note": "Codex最終利用 2026-11-23T06:40:27.293Z の記録から算出"
+   "windows": [],
+   "note": "Codex最終利用 2026-11-23T07:19:28.229Z の記録から算出"
   },
   {
    "id": "gemini",
@@ -55,15 +40,15 @@
    "windows": [
     {
      "label": "5時間",
-     "used_pct": 34.4,
-     "remaining_pct": 65.6,
+     "used_pct": 58.4,
+     "remaining_pct": 41.6,
      "resets_at": "2026-11-23T18:33:38+09:00",
      "reset_text": "11/23 18:33"
     },
     {
      "label": "週間",
-     "used_pct": 22.7,
-     "remaining_pct": 77.3,
+     "used_pct": 29.7,
+     "remaining_pct": 70.3,
      "resets_at": "2026-11-29T14:39:38+09:00",
      "reset_text": "11/29 14:39"
     }
