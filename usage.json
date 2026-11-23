@@ -1,6 +1,6 @@
 {
- "updated_at": "2026-11-24T00:57:46.873456+09:00",
- "updated_text": "11/24 00:57",
+ "updated_at": "2026-11-24T01:27:48.467236+09:00",
+ "updated_text": "11/24 01:27",
  "services": [
   {
    "id": "claude",
@@ -12,15 +12,15 @@
      "label": "5時間",
      "used_pct": 50.0,
      "remaining_pct": 50.0,
-     "resets_at": "2026-11-24T03:39:59.701610+09:00",
-     "reset_text": "11/24 03:39"
+     "resets_at": "2026-11-24T03:40:00.088633+09:00",
+     "reset_text": "11/24 03:40"
     },
     {
      "label": "週間",
      "used_pct": 44.0,
      "remaining_pct": 56.0,
-     "resets_at": "2026-11-25T05:59:59.701633+09:00",
-     "reset_text": "11/25 05:59"
+     "resets_at": "2026-11-25T06:00:00.088656+09:00",
+     "reset_text": "11/25 06:00"
     }
    ]
   },
@@ -32,10 +32,11 @@
    "windows": [
     {
      "label": "5時間",
-     "used_pct": 3.0,
-     "remaining_pct": 97.0,
-     "resets_at": "2026-11-24T01:00:28+09:00",
-     "reset_text": "11/24 01:00"
+     "used_pct": 0.0,
+     "remaining_pct": 100.0,
+     "resets_at": null,
+     "reset_text": null,
+     "note": "窓はリセット済み"
     },
     {
      "label": "週間",
