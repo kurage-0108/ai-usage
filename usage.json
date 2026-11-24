@@ -1,6 +1,6 @@
 {
- "updated_at": "2026-11-24T20:27:37.329631+09:00",
- "updated_text": "11/24 20:27",
+ "updated_at": "2026-11-24T20:57:39.685843+09:00",
+ "updated_text": "11/24 20:57",
  "services": [
   {
    "id": "claude",
@@ -19,7 +19,7 @@
      "label": "週間",
      "used_pct": 46.0,
      "remaining_pct": 54.0,
-     "resets_at": "2026-11-25T06:00:00.420236+09:00",
+     "resets_at": "2026-11-25T06:00:00.038788+09:00",
      "reset_text": "11/25 06:00"
     }
    ]
@@ -55,15 +55,15 @@
    "windows": [
     {
      "label": "5時間",
-     "used_pct": 1.0,
-     "remaining_pct": 99.0,
+     "used_pct": 0.6,
+     "remaining_pct": 99.4,
      "resets_at": "2026-11-25T00:37:58+09:00",
      "reset_text": "11/25 00:37"
     },
     {
      "label": "週間",
-     "used_pct": 1.8,
-     "remaining_pct": 98.2,
+     "used_pct": 0.9,
+     "remaining_pct": 99.1,
      "resets_at": "2026-12-01T12:19:29+09:00",
      "reset_text": "12/01 12:19"
     }
