@@ -1,6 +1,6 @@
 {
- "updated_at": "2026-11-24T20:57:39.685843+09:00",
- "updated_text": "11/24 20:57",
+ "updated_at": "2026-11-24T21:27:37.826962+09:00",
+ "updated_text": "11/24 21:27",
  "services": [
   {
    "id": "claude",
@@ -19,8 +19,8 @@
      "label": "週間",
      "used_pct": 46.0,
      "remaining_pct": 54.0,
-     "resets_at": "2026-11-25T06:00:00.038788+09:00",
-     "reset_text": "11/25 06:00"
+     "resets_at": "2026-11-25T05:59:59.646684+09:00",
+     "reset_text": "11/25 05:59"
     }
    ]
   },
@@ -32,10 +32,10 @@
    "windows": [
     {
      "label": "5時間",
-     "used_pct": 4.0,
-     "remaining_pct": 96.0,
-     "resets_at": "2026-11-24T21:08:51+09:00",
-     "reset_text": "11/24 21:08"
+     "used_pct": 0.0,
+     "remaining_pct": 100.0,
+     "resets_at": "2026-11-25T02:15:56+09:00",
+     "reset_text": "11/25 02:15"
     },
     {
      "label": "週間",
@@ -45,7 +45,7 @@
      "reset_text": "11/28 10:35"
     }
    ],
-   "note": "Codex最終利用 2026-11-24T10:33:12.434Z の記録から算出"
+   "note": "Codex最終利用 2026-11-24T12:16:05.336Z の記録から算出"
   },
   {
    "id": "gemini",
@@ -77,8 +77,8 @@
    "windows": [
     {
      "label": "週間",
-     "used_pct": 13.0,
-     "remaining_pct": 87.0,
+     "used_pct": 15.0,
+     "remaining_pct": 85.0,
      "resets_at": "2026-11-30T17:12:00+09:00",
      "reset_text": "11/30 17:12"
     }
