@@ -1,6 +1,6 @@
 {
- "updated_at": "2026-11-24T19:57:46.217632+09:00",
- "updated_text": "11/24 19:57",
+ "updated_at": "2026-11-24T20:27:37.329631+09:00",
+ "updated_text": "11/24 20:27",
  "services": [
   {
    "id": "claude",
@@ -10,16 +10,16 @@
    "windows": [
     {
      "label": "5時間",
-     "used_pct": 1.0,
-     "remaining_pct": 99.0,
-     "resets_at": "2026-11-24T20:20:00.027843+09:00",
-     "reset_text": "11/24 20:20"
+     "used_pct": 0.0,
+     "remaining_pct": 100.0,
+     "resets_at": null,
+     "reset_text": null
     },
     {
      "label": "週間",
      "used_pct": 46.0,
      "remaining_pct": 54.0,
-     "resets_at": "2026-11-25T06:00:00.027863+09:00",
+     "resets_at": "2026-11-25T06:00:00.420236+09:00",
      "reset_text": "11/25 06:00"
     }
    ]
@@ -55,15 +55,15 @@
    "windows": [
     {
      "label": "5時間",
-     "used_pct": 0.6,
-     "remaining_pct": 99.4,
+     "used_pct": 1.0,
+     "remaining_pct": 99.0,
      "resets_at": "2026-11-25T00:37:58+09:00",
      "reset_text": "11/25 00:37"
     },
     {
      "label": "週間",
-     "used_pct": 0.9,
-     "remaining_pct": 99.1,
+     "used_pct": 1.8,
+     "remaining_pct": 98.2,
      "resets_at": "2026-12-01T12:19:29+09:00",
      "reset_text": "12/01 12:19"
     }
@@ -73,8 +73,16 @@
    "id": "muse",
    "name": "Muse",
    "plan": "Power",
-   "status": "error",
-   "note": "読み取り失敗"
+   "status": "ok",
+   "windows": [
+    {
+     "label": "週間",
+     "used_pct": 13.0,
+     "remaining_pct": 87.0,
+     "resets_at": "2026-11-30T17:12:00+09:00",
+     "reset_text": "11/30 17:12"
+    }
+   ]
   },
   {
    "id": "grok",
