@@ -1,6 +1,6 @@
 {
- "updated_at": "2026-11-28T12:27:56.781023+09:00",
- "updated_text": "11/28 12:27",
+ "updated_at": "2026-11-28T12:57:44.801958+09:00",
+ "updated_text": "11/28 12:57",
  "services": [
   {
    "id": "claude",
@@ -10,17 +10,17 @@
    "windows": [
     {
      "label": "5時間",
-     "used_pct": 83.0,
-     "remaining_pct": 17.0,
-     "resets_at": "2026-11-28T15:49:59.677802+09:00",
-     "reset_text": "11/28 15:49"
+     "used_pct": 99.0,
+     "remaining_pct": 1.0,
+     "resets_at": "2026-11-28T15:50:00.414755+09:00",
+     "reset_text": "11/28 15:50"
     },
     {
      "label": "週間",
-     "used_pct": 23.0,
-     "remaining_pct": 77.0,
-     "resets_at": "2026-12-02T05:59:59.677819+09:00",
-     "reset_text": "12/02 05:59"
+     "used_pct": 24.0,
+     "remaining_pct": 76.0,
+     "resets_at": "2026-12-02T06:00:00.414772+09:00",
+     "reset_text": "12/02 06:00"
     }
    ]
   },
@@ -32,22 +32,20 @@
    "windows": [
     {
      "label": "5時間",
-     "used_pct": 0.0,
-     "remaining_pct": 100.0,
-     "resets_at": null,
-     "reset_text": null,
-     "note": "窓はリセット済み"
+     "used_pct": 1.0,
+     "remaining_pct": 99.0,
+     "resets_at": "2026-11-28T17:28:27+09:00",
+     "reset_text": "11/28 17:28"
     },
     {
      "label": "週間",
      "used_pct": 0.0,
      "remaining_pct": 100.0,
-     "resets_at": null,
-     "reset_text": null,
-     "note": "窓はリセット済み"
+     "resets_at": "2026-12-05T12:28:27+09:00",
+     "reset_text": "12/05 12:28"
     }
    ],
-   "note": "Codex最終利用 2026-11-24T16:47:44.631Z の記録から算出"
+   "note": "Codex最終利用 2026-11-28T03:50:51.940Z の記録から算出"
   },
   {
    "id": "gemini",
@@ -57,15 +55,15 @@
    "windows": [
     {
      "label": "5時間",
-     "used_pct": 1.0,
-     "remaining_pct": 99.0,
+     "used_pct": 2.4,
+     "remaining_pct": 97.6,
      "resets_at": "2026-11-28T17:25:23+09:00",
      "reset_text": "11/28 17:25"
     },
     {
      "label": "週間",
-     "used_pct": 1.7,
-     "remaining_pct": 98.3,
+     "used_pct": 2.8,
+     "remaining_pct": 97.2,
      "resets_at": "2026-12-04T09:53:48+09:00",
      "reset_text": "12/04 09:53"
     }
