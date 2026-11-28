@@ -1,6 +1,6 @@
 {
- "updated_at": "2026-11-28T10:27:39.167872+09:00",
- "updated_text": "11/28 10:27",
+ "updated_at": "2026-11-28T10:57:56.736079+09:00",
+ "updated_text": "11/28 10:57",
  "services": [
   {
    "id": "claude",
@@ -19,7 +19,7 @@
      "label": "週間",
      "used_pct": 16.0,
      "remaining_pct": 84.0,
-     "resets_at": "2026-12-02T05:59:59.885162+09:00",
+     "resets_at": "2026-12-02T05:59:59.954443+09:00",
      "reset_text": "12/02 05:59"
     }
    ]
@@ -40,10 +40,11 @@
     },
     {
      "label": "週間",
-     "used_pct": 38.0,
-     "remaining_pct": 62.0,
-     "resets_at": "2026-11-28T10:35:20+09:00",
-     "reset_text": "11/28 10:35"
+     "used_pct": 0.0,
+     "remaining_pct": 100.0,
+     "resets_at": null,
+     "reset_text": null,
+     "note": "窓はリセット済み"
     }
    ],
    "note": "Codex最終利用 2026-11-24T16:47:44.631Z の記録から算出"
@@ -78,8 +79,8 @@
    "windows": [
     {
      "label": "週間",
-     "used_pct": 44.0,
-     "remaining_pct": 56.0,
+     "used_pct": 47.0,
+     "remaining_pct": 53.0,
      "resets_at": "2026-11-30T17:12:00+09:00",
      "reset_text": "11/30 17:12"
     }
